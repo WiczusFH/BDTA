@@ -1,0 +1,53 @@
+Prerequisites:
+	The following steps have to be executed on every worker node (every computer that will partake in processing)
+	- install JDK 15+
+		the installation file can be found here: https://www.oracle.com/java/technologies/javase/jdk15-archive-downloads.html
+	- install cudnn(optional, requires nvidia graphics card)
+		the installation guide can be found here:https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
+	- In your active python environment install the dependencies using requirements.txt
+		pip install -r requirements.txt
+	- Put the path to python executable from your active environment as a system enviornment variable "PYSPARK_PYTHON". 
+	- Put the path to your chosen JDK as a system enviornment variable "JAVA_HOME". 
+	- Install Docker Desktop. The file can be found under https://docs.docker.com/desktop/install/windows-install/
+	- Install redis.
+		1. Start docker desktop.
+		2. In commandline write "docker pull redis".
+		3. In commandline write "docker run -d --name my-redis -p 6379:6379 -v {filepath} redis-server --appendonly yes". Where filepath is the place you want the data to be persisted.
+
+Usage:
+	- Data Scraping
+		* Telegram
+			1. Sign up for a Telegram account if you do not already have one.
+			2. Go to the Telegram website and log in to your account.
+			3. Go to the Telegram API website (https://core.telegram.org/api/obtaining_api_id).
+			4. Subscribe to the channel you want to scrape in your telegram app.
+			5. In datascraping/telegram/scrape_telegram.py put your API key and the phone number and the desired channel.Set DBIDX to be a key unique to your data_source. (leave it as telegram if you only have one telegram source) and run the script.
+
+		* New York Times
+			1. Create a NYT developer account.
+			2. Create a NYT personal account and subscribe (legal requirement).
+			3. In datascraping/nyt/scrape_nyt_metadata.py change the year to your desired year and run the script. This will produce lists of articles and their urls.
+			4. In datascraping/nyt/scrape_nyt_text.ipnb run cells until the cell under "Login Required Markdown".
+			5. Log yourself in. 
+			6. Run the remaining cells. This will download the actual texts.
+	- Data Analysis. 
+		- In data_analysis/CountEntriesSpark.py select the key (nyt or telegram from example) you want to count entries for and run the script.
+		- In data_analysis/CountWordsSpark.py select the key (nyt or telegram from example) you want to count entries for and run the script.
+		- In data_analysis/SentimentAnalysisSpark.py select the key (nyt or telegram from example) you want to count entries for and run the script.
+			*In case of AVX warnings use the data_analysis/SentenceSplitSpark.py instead and then
+			SentimentAnalysisNoSpark.ipynb. This can resolve GPU not being included in processing, however only runs on one node. 
+	- Presentation:
+		- Run the ipynb files in the presentation folder.
+
+Used Models:
+	- HuggingFace Transformer from https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment.
+		Hugging Face is a transformer neural network library that can be deployed quickly for nlp tasks. 
+		In this project the library is used to analyse the sentiment. 
+
+Redis schema:
+    - {source}:{date}:{index}
+        index = unique number (counting from 0 up)
+        date = %Y%m%d
+
+
+
